@@ -49,7 +49,7 @@ impl<T> DynamicMat<T> {
 
     /// Appends a new row to the matrix
     pub fn push_row(&mut self, row: Vec<T>) -> Result<(), ShapeError> {
-        if row.len() != self.cols {
+        if row.len() != self.cols() {
             Err(ShapeError::new_cols_error(self.cols(), row.len()))
         } else {
             self.data.extend(row.into_iter());
@@ -59,10 +59,14 @@ impl<T> DynamicMat<T> {
 
     /// Appends a new columns to the matrix
     pub fn push_col(&mut self, col: Vec<T>) -> Result<(), ShapeError> {
-        if col.len() != self.cols {
+        if col.len() != self.rows() {
             Err(ShapeError::new_rows_error(self.rows(), col.len()))
         } else {
-            self.data.extend(col.into_iter());
+            for (i, e) in col.into_iter().enumerate() {
+                self.data.insert(self.cols() + self.cols() * i + i, e);
+            }
+            self.cols += 1;
+
             Ok(())
         }
     }
@@ -111,5 +115,34 @@ mod tests {
 
         // Trying to push a vector with length 4 into a matrix with only 3 columns
         mat.push_row(vec![1, 2, 3, 4]).unwrap();
+    }
+
+    #[test]
+    fn test_push_col() {
+        let mut mat: DynamicMat<isize> = DynamicMat::new(COLS - 1);
+
+        // TODO change this to use the macro later
+        mat.push_row(vec![1, 2]).unwrap();
+        mat.push_row(vec![4, 5]).unwrap();
+        mat.push_row(vec![7, 8]).unwrap();
+
+        mat.push_col(vec![3, 6, 9]).unwrap();
+
+        assert_eq!(mat.as_slice(), vec![1, 2, 3, 4, 5, 6, 7, 8, 9].as_slice()); // checking the elements
+        assert_eq!(mat.cols(), COLS); // checking the number of rows
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_push_col_fail() {
+        let mut mat: DynamicMat<isize> = DynamicMat::new(COLS - 1);
+
+        // TODO change this to use the macro later
+        mat.push_row(vec![1, 2]).unwrap();
+        mat.push_row(vec![4, 5]).unwrap();
+        mat.push_row(vec![7, 8]).unwrap();
+
+        // Trying to push a column with less elements than the number of rows
+        mat.push_col(vec![3, 6]).unwrap();
     }
 }
