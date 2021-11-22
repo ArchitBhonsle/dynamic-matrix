@@ -8,8 +8,3 @@ license = "Apache-2.0"
 name = "simple-matrices"
 repository = "https://github.com/ArchitBhonsle/simple-matrices"
 version = "0.1.0"
-
-[lints]
-rust_2018_idioms = "warn"
-missing_debug_implementations = "warn"
-missing_docs = "warn"
