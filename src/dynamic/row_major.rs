@@ -85,6 +85,25 @@ impl<T> DynamicMatrix<T> {
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.data.as_mut_slice()
     }
+
+    /// Decomposes the DynamicMatrix into it's underlying raw components
+    /// The returned tuple has three elements: (raw parts of the underlying vector, number of columns)
+    // TODO tests
+    #[cfg(vec_into_raw_parts)]
+    pub fn into_raw_parts(self) -> ((*mut T, usize, usize), usize) {
+        let cols = self.cols();
+
+        (self.data.into_raw_parts(), cols)
+    }
+
+    /// Creates a DynamicMatrix from it's underlying raw components
+    // TODO tests
+    pub unsafe fn from_raw_parts(vec_parts: (*mut T, usize, usize), cols: usize) -> Self {
+        Self {
+            data: Vec::from_raw_parts(vec_parts.0, vec_parts.1, vec_parts.2),
+            cols,
+        }
+    }
 }
 
 #[cfg(test)]
