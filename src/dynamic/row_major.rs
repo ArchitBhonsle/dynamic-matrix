@@ -4,12 +4,12 @@ use crate::errors::ShapeError;
 
 #[derive(Debug)]
 /// A row-ordered dynamic matrix. It is cheap to add a new row while adding a new column is expensive
-pub struct DynamicMat<T> {
+pub struct DynamicMatrix<T> {
     data: Vec<T>,
     cols: usize,
 }
 
-impl<T> DynamicMat<T> {
+impl<T> DynamicMatrix<T> {
     /// Constructs a new DynamicMatR<T>.
     pub fn new(cols: usize) -> Self {
         Self {
@@ -25,11 +25,6 @@ impl<T> DynamicMat<T> {
             data: Vec::with_capacity(shape.0 * shape.1),
             cols: shape.1,
         }
-    }
-
-    /// Extracts a slice containing the underlying Vec<T>
-    pub fn as_slice(&self) -> &[T] {
-        self.data.as_slice()
     }
 
     /// Returns the number of rows in the matrix
@@ -70,6 +65,26 @@ impl<T> DynamicMat<T> {
             Ok(())
         }
     }
+
+    /// Gives a raw pointer to the underlying Vec's buffer
+    pub fn as_ptr(&self) -> *const T {
+        self.data.as_ptr()
+    }
+
+    /// Gives a raw mutable pointer to the underlying Vec's buffer
+    pub fn as_mut_ptr(&mut self) -> *mut T {
+        self.data.as_mut_ptr()
+    }
+
+    /// Extracts a slice containing the underlying Vec
+    pub fn as_slice(&self) -> &[T] {
+        self.data.as_slice()
+    }
+
+    /// Extracts a mut slice containing the underlying Vec
+    pub fn as_mut_slice(&mut self) -> &mut [T] {
+        self.data.as_mut_slice()
+    }
 }
 
 #[cfg(test)]
@@ -80,16 +95,16 @@ mod tests {
     const COLS: usize = 3;
 
     #[test]
-    fn test_new() {
-        let mat: DynamicMat<isize> = DynamicMat::new(COLS);
+    fn new() {
+        let mat: DynamicMatrix<isize> = DynamicMatrix::new(COLS);
 
         assert_eq!(mat.rows(), 0);
         assert_eq!(mat.cols(), COLS);
     }
 
     #[test]
-    fn test_with_capacity() {
-        let mat: DynamicMat<isize> = DynamicMat::with_capacity((ROWS, COLS));
+    fn with_capacity() {
+        let mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((ROWS, COLS));
 
         assert_eq!(mat.rows(), 0);
         assert_eq!(mat.cols(), COLS);
@@ -97,8 +112,21 @@ mod tests {
     }
 
     #[test]
-    fn test_push_row() {
-        let mut mat: DynamicMat<isize> = DynamicMat::new(COLS);
+    fn shape_rows_cols() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::new(COLS);
+
+        mat.push_row(vec![1, 2, 3]).unwrap();
+        mat.push_row(vec![4, 5, 6]).unwrap();
+        mat.push_row(vec![7, 8, 9]).unwrap();
+
+        assert_eq!(mat.shape(), (ROWS, COLS));
+        assert_eq!(mat.rows(), ROWS);
+        assert_eq!(mat.cols(), COLS);
+    }
+
+    #[test]
+    fn push_row() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::new(COLS);
 
         mat.push_row(vec![1, 2, 3]).unwrap();
         mat.push_row(vec![4, 5, 6]).unwrap();
@@ -110,16 +138,16 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_push_row_fail() {
-        let mut mat: DynamicMat<isize> = DynamicMat::new(COLS);
+    fn push_row_fail() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::new(COLS);
 
         // Trying to push a vector with length 4 into a matrix with only 3 columns
         mat.push_row(vec![1, 2, 3, 4]).unwrap();
     }
 
     #[test]
-    fn test_push_col() {
-        let mut mat: DynamicMat<isize> = DynamicMat::new(COLS - 1);
+    fn push_col() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::new(COLS - 1);
 
         // TODO change this to use the macro later
         mat.push_row(vec![1, 2]).unwrap();
@@ -128,14 +156,14 @@ mod tests {
 
         mat.push_col(vec![3, 6, 9]).unwrap();
 
-        assert_eq!(mat.as_slice(), vec![1, 2, 3, 4, 5, 6, 7, 8, 9].as_slice()); // checking the elements
+        assert_eq!(mat.as_slice(), &[1, 2, 3, 4, 5, 6, 7, 8, 9]); // checking the elements
         assert_eq!(mat.cols(), COLS); // checking the number of rows
     }
 
     #[test]
     #[should_panic]
-    fn test_push_col_fail() {
-        let mut mat: DynamicMat<isize> = DynamicMat::new(COLS - 1);
+    fn push_col_fail() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::new(COLS - 1);
 
         // TODO change this to use the macro later
         mat.push_row(vec![1, 2]).unwrap();
@@ -144,5 +172,35 @@ mod tests {
 
         // Trying to push a column with less elements than the number of rows
         mat.push_col(vec![3, 6]).unwrap();
+    }
+
+    #[test]
+    fn as_ptr() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((ROWS, COLS));
+
+        mat.push_row(vec![1, 2, 3]).unwrap();
+        mat.push_row(vec![4, 5, 6]).unwrap();
+
+        let mat_ptr = mat.as_ptr();
+        for i in 0..mat.data.len() {
+            assert_eq!(unsafe { *mat_ptr.add(i) }, i as isize + 1);
+        }
+    }
+
+    #[test]
+    fn as_mut_ptr() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((ROWS, COLS));
+
+        mat.push_row(vec![1, 2, 3]).unwrap();
+        mat.push_row(vec![4, 5, 6]).unwrap();
+
+        let mat_ptr = mat.as_mut_ptr();
+        for i in 0..mat.data.len() {
+            unsafe {
+                *mat_ptr.add(i) = i as isize + 7;
+            }
+        }
+
+        assert_eq!(mat.as_slice(), &[7, 8, 9, 10, 11, 12]);
     }
 }

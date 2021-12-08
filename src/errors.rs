@@ -1,3 +1,5 @@
+use std::fmt;
+
 // The error type for any shape errors
 #[derive(Clone, Debug)]
 pub struct ShapeError {
@@ -7,8 +9,8 @@ pub struct ShapeError {
     expected_cols: usize,
 }
 
-impl std::fmt::Display for ShapeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for ShapeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.rows != self.expected_rows {
             write!(
                 f,
