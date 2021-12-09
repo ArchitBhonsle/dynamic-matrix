@@ -3,14 +3,14 @@ use std::vec::Vec;
 use crate::errors::ShapeError;
 
 #[derive(Debug)]
-/// A row-ordered dynamic matrix. It is cheap to add a new row while adding a new column is expensive
+/// A dynamic matrix with row-major ordering. Adding a new row is cheap while adding a new column is expensive
 pub struct DynamicMatrix<T> {
     data: Vec<T>,
     cols: usize,
 }
 
 impl<T> DynamicMatrix<T> {
-    /// Constructs a new DynamicMatR<T>.
+    /// Constructs a new DynamicMatrix
     pub fn new(cols: usize) -> Self {
         Self {
             data: Vec::new(),
@@ -18,7 +18,7 @@ impl<T> DynamicMatrix<T> {
         }
     }
 
-    /// Constructs a new DynamicMatR<T> and allocates enough space to accomodate a matrix of the provided shape without
+    /// Constructs a new DynamicMatrix and allocates enough space to accomodate a matrix of the provided shape without
     /// reallocation
     pub fn with_capacity(shape: (usize, usize)) -> Self {
         Self {
@@ -27,12 +27,12 @@ impl<T> DynamicMatrix<T> {
         }
     }
 
-    /// Returns the number of rows in the matrix
+    /// Returns the number of rows in the DynamicMatrix
     pub fn rows(&self) -> usize {
         self.data.len() / self.cols()
     }
 
-    /// Returns the number of columns in the matrix
+    /// Returns the number of columns in the DynamicMatrix
     pub fn cols(&self) -> usize {
         self.cols
     }
@@ -42,7 +42,7 @@ impl<T> DynamicMatrix<T> {
         (self.rows(), self.cols())
     }
 
-    /// Appends a new row to the matrix
+    /// Appends a new row to the DynamicMatrix
     pub fn push_row(&mut self, row: Vec<T>) -> Result<(), ShapeError> {
         if row.len() != self.cols() {
             Err(ShapeError::new_cols_error(self.cols(), row.len()))
@@ -52,7 +52,7 @@ impl<T> DynamicMatrix<T> {
         }
     }
 
-    /// Appends a new columns to the matrix
+    /// Appends a new columns to the DynamicMatrix
     pub fn push_col(&mut self, col: Vec<T>) -> Result<(), ShapeError> {
         if col.len() != self.rows() {
             Err(ShapeError::new_rows_error(self.rows(), col.len()))
@@ -86,7 +86,7 @@ impl<T> DynamicMatrix<T> {
         self.data.as_mut_slice()
     }
 
-    /// Decomposes the DynamicMatrix into it's underlying raw components
+    /// Decomposes the DynamicMatrix into the raw compoenents of it's underlying Vec
     /// The returned tuple has three elements: (raw parts of the underlying vector, number of columns)
     // TODO tests
     #[cfg(vec_into_raw_parts)]
@@ -101,6 +101,21 @@ impl<T> DynamicMatrix<T> {
     pub unsafe fn from_raw_parts(vec_parts: (*mut T, usize, usize), cols: usize) -> Self {
         Self {
             data: Vec::from_raw_parts(vec_parts.0, vec_parts.1, vec_parts.2),
+            cols,
+        }
+    }
+
+    /// Decomposes the DynamicMatrix into the boxed slice of it's underlying Vec
+    pub fn into_boxed_slice(self) -> (Box<[T]>, usize) {
+        let cols = self.cols();
+
+        (self.data.into_boxed_slice(), cols)
+    }
+
+    /// Creates a DynamicMatrix from a Boxed slice
+    pub fn from_boxed_slice(boxed_slice: Box<[T]>, cols: usize) -> Self {
+        Self {
+            data: boxed_slice.into_vec(),
             cols,
         }
     }
@@ -199,6 +214,7 @@ mod tests {
 
         mat.push_row(vec![1, 2, 3]).unwrap();
         mat.push_row(vec![4, 5, 6]).unwrap();
+        mat.push_row(vec![7, 8, 9]).unwrap();
 
         let mat_ptr = mat.as_ptr();
         for i in 0..mat.data.len() {
@@ -209,17 +225,39 @@ mod tests {
     #[test]
     fn as_mut_ptr() {
         let mut mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((ROWS, COLS));
-
         mat.push_row(vec![1, 2, 3]).unwrap();
         mat.push_row(vec![4, 5, 6]).unwrap();
+        mat.push_row(vec![7, 8, 9]).unwrap();
 
         let mat_ptr = mat.as_mut_ptr();
         for i in 0..mat.data.len() {
             unsafe {
-                *mat_ptr.add(i) = i as isize + 7;
+                *mat_ptr.add(i) = i as isize + 10;
             }
         }
 
-        assert_eq!(mat.as_slice(), &[7, 8, 9, 10, 11, 12]);
+        assert_eq!(mat.as_slice(), &[10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    }
+
+    #[test]
+    fn into_boxed_slice() {
+        let mut mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((ROWS, COLS));
+        mat.push_row(vec![1, 2, 3]).unwrap();
+        mat.push_row(vec![4, 5, 6]).unwrap();
+        mat.push_row(vec![7, 8, 9]).unwrap();
+
+        let (slice, cols) = mat.into_boxed_slice();
+
+        assert_eq!(cols, COLS);
+        assert_eq!(slice.as_ref(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    }
+
+    #[test]
+    fn from_boxed_slice() {
+        let boxed_slice = Box::new([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        let mat = DynamicMatrix::from_boxed_slice(boxed_slice, COLS);
+
+        assert_eq!(mat.cols(), COLS);
+        assert_eq!(mat.as_slice(), &[1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 }
