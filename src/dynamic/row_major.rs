@@ -1,4 +1,7 @@
-use std::{ops::Index, vec::Vec};
+use std::{
+    ops::{Index, IndexMut},
+    vec::Vec,
+};
 
 use crate::errors::{indexing_error::IndexingError, shape_error::ShapeError};
 
@@ -398,7 +401,45 @@ impl<T> DynamicMatrix<T> {
         let (row, col) = index;
         if row < self.rows() && col < self.cols() {
             match self.data.get(row * self.cols() + col) {
-                Some(v) => Ok(&v),
+                Some(v) => Ok(v),
+                None => unreachable!(),
+            }
+        } else {
+            Err(IndexingError::new(index, self.shape()))
+        }
+    }
+
+    /// Returns a `Result` containing an exclusive reference to the value at the given index
+    ///
+    /// ```
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
+    ///
+    /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+    ///
+    /// for row in 0..mat.rows() {
+    ///     for col in 0..mat.cols() {
+    ///         *mat.get_mut((row, col)).unwrap() += 9;
+    ///     }
+    /// }
+    ///
+    /// assert_eq!(mat.as_slice(), &[10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    /// ```
+    ///
+    /// Indexing outside bounds will return an `IndexingError`.
+    /// ```should_panic
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
+    ///
+    /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+    ///
+    /// *mat.get_mut((3, 3)).unwrap() += 1;
+    /// ```
+    pub fn get_mut(&mut self, index: (usize, usize)) -> Result<&mut T, IndexingError> {
+        let (row, col) = index;
+        let cols = self.cols();
+
+        if row < self.rows() && col < self.cols() {
+            match self.data.get_mut(row * cols + col) {
+                Some(v) => Ok(v),
                 None => unreachable!(),
             }
         } else {
@@ -425,5 +466,26 @@ impl<T> Index<(usize, usize)> for DynamicMatrix<T> {
     /// ```
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         self.get(index).unwrap()
+    }
+}
+
+impl<T> IndexMut<(usize, usize)> for DynamicMatrix<T> {
+    /// Returns an exclusive reference to the value at the given index
+    ///
+    /// ```
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
+    ///
+    /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+    ///
+    /// for row in 0..mat.rows() {
+    ///     for col in 0..mat.cols() {
+    ///         mat[(row, col)] += 9;
+    ///     }
+    /// }
+    ///
+    /// assert_eq!(mat.as_slice(), &[10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    /// ```
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        self.get_mut(index).unwrap()
     }
 }
