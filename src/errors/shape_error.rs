@@ -12,13 +12,13 @@ pub struct ShapeError {
 impl fmt::Display for ShapeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.rows != self.expected_rows {
-            write!(
+            writeln!(
                 f,
                 "The operation performed expected {} rows but the matrix has {}.",
                 self.expected_rows, self.rows
             )
         } else {
-            write!(
+            writeln!(
                 f,
                 "The operation performed expected {} cols but the matrix has {}.",
                 self.expected_cols, self.cols
