@@ -102,6 +102,7 @@ impl<T> DynamicMatrix<T> {
     ///
     /// assert_eq!(mat.rows(), 0);
     /// assert_eq!(mat.cols(), 3);
+    /// assert_eq!(mat.capacity(), 9);
     /// ```
     pub fn with_capacity(shape: (usize, usize)) -> Self {
         Self {
@@ -113,7 +114,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns the number of rows in the DynamicMatrix
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
     ///
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
@@ -126,7 +127,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns the number of columns in the DynamicMatrix
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
     ///
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
@@ -139,7 +140,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns a tuple containing the number of rows as the first element and number of columns as the second element
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
     ///
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
@@ -147,6 +148,30 @@ impl<T> DynamicMatrix<T> {
     /// ```
     pub fn shape(&self) -> (usize, usize) {
         (self.rows(), self.cols())
+    }
+
+    /// Returns the length of the underlying Vec
+    ///
+    /// ```
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
+    ///
+    /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+    ///
+    /// assert_eq!(mat.len(), 9);
+    pub fn len(&self) -> usize {
+        self.data.capacity()
+    }
+
+    /// Returns the capacity of the underlying Vec
+    ///
+    /// ```
+    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
+    ///
+    /// let mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((3, 3));
+    ///
+    /// assert_eq!(mat.capacity(), 9);
+    pub fn capacity(&self) -> usize {
+        self.data.capacity()
     }
 
     /// Appends a new row to the DynamicMatrix
@@ -228,7 +253,7 @@ impl<T> DynamicMatrix<T> {
     /// Gives a raw pointer to the underlying Vec's buffer
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
     ///
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
@@ -244,7 +269,7 @@ impl<T> DynamicMatrix<T> {
     /// Gives a raw mutable pointer to the underlying Vec's buffer
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
     ///
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
@@ -264,6 +289,11 @@ impl<T> DynamicMatrix<T> {
     /// Extracts a slice containing the underlying Vec
     ///
     /// ```
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
+    ///
+    /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+    ///
+    /// assert_eq!(mat.as_slice(), &[1, 2, 3, 4, 5, 6, 7, 8, 9]);
     /// ```
     pub fn as_slice(&self) -> &[T] {
         self.data.as_slice()
@@ -272,6 +302,16 @@ impl<T> DynamicMatrix<T> {
     /// Extracts a mut slice containing the underlying Vec
     ///
     /// ```
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
+    ///
+    /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
+    /// let mut mat_slice = mat.as_mut_slice();
+    ///
+    /// mat_slice[0] = 10;
+    /// mat_slice[1] = 11;
+    /// mat_slice[2] = 12;
+    ///
+    /// assert_eq!(mat.as_slice(), &[10, 11, 12, 4, 5, 6, 7, 8, 9]);
     /// ```
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.data.as_mut_slice()
@@ -299,7 +339,7 @@ impl<T> DynamicMatrix<T> {
     /// Decomposes the DynamicMatrix into the boxed slice of it's underlying Vec
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
+    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
     ///
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
@@ -333,7 +373,7 @@ impl<T> DynamicMatrix<T> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+// }
