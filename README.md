@@ -2,6 +2,27 @@
 
 A crate to work with dynamically sized matrices.
 
+```rust
+use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
+
+let mut mat = dynamic_matrix![
+    1, 2; 
+    4, 5;
+];
+// let mat: DynamicMatrix<isize> = DynamicMatrix::new([[1, 2], [4, 5]]);
+
+assert_eq!(mat.shape(), (2, 2));
+
+mat.push_row(vec![7, 8]).unwrap();
+mat.push_col(vec![3, 6, 10]).unwrap();
+
+assert_eq!(mat.shape(), (3, 3));
+
+assert_eq!(mat[(1, 2)], 6);
+mat[(2, 2)] = 9;
+
+assert_eq!(mat.as_slice(), &[1, 2, 3, 4, 5, 6, 7, 8, 9]);
+```
 
 ## Goals
 
