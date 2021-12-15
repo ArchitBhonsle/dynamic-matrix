@@ -2,10 +2,10 @@
 authors = ["Archit Bhonsle <abhonsle2000@gmail.com"]
 categories = ["data-structures"]
 description = "A simple crate to work with matrices"
-documentation = "https://architbhonsle.github.io/dynamic-matrix/"
+documentation = "https://docs.rs/dynamic-matrix/latest/dynamic_matrix"
 edition = "2021"
 keywords = ["matrices"]
 license = "Apache-2.0"
 name = "dynamic-matrix"
-repository = "https://github.com/ArchitBhonsle/simple-matrices"
-version = "0.1.0"
+repository = "https://github.com/ArchitBhonsle/dynamic-matrix"
+version = "0.1.1"
