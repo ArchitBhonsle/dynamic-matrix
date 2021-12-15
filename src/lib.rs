@@ -1,6 +1,6 @@
 #![warn(missing_debug_implementations, missing_docs)]
 
-//! A crate to work with dynamic matrices
+//! A crate to work with dynamically sized matrices.
 
 /// Contains the errors associated with this crate
 pub mod errors;

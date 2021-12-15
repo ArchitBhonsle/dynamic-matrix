@@ -1,6 +1,7 @@
-# simple-matrices
+# dynamic-matrix
 
-A simple crate to work with matrices.
+A crate to work with dynamically sized matrices.
+
 
 ## Goals
 
