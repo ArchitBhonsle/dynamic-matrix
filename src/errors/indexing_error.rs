@@ -1,7 +1,9 @@
+//! Error encountered while indexing into a matrix
+
 use std::fmt;
 
-// The error type of indexing out of bounds
 #[derive(Clone, Debug)]
+/// The error type of indexing out of bounds
 pub struct IndexingError {
     row: usize,
     col: usize,
@@ -38,6 +40,7 @@ impl fmt::Display for IndexingError {
 }
 
 impl IndexingError {
+    /// Create a new `IndexingError` given the index as a row, column tuple and the shape of the matrix being indexed
     pub fn new(index: (usize, usize), shape: (usize, usize)) -> IndexingError {
         IndexingError {
             row: index.0,

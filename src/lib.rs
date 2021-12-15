@@ -1,7 +1,11 @@
 #![warn(missing_debug_implementations, missing_docs)]
 
-//! A simple crate to work with matrices
+//! A crate to work with dynamic matrices
 
-/// Contains dynamic matrices
-pub mod dynamic;
-mod errors;
+/// Contains the errors associated with this crate
+pub mod errors;
+/// Contains the row major ordered DynamicMatrix
+mod row_major;
+
+// Re-exporting for ease-of-use
+pub use row_major::DynamicMatrix;

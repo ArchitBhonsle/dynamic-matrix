@@ -12,8 +12,7 @@ use crate::errors::{indexing_error::IndexingError, shape_error::ShapeError};
 ///
 /// 1. With a single argument, the number of columns in this DynamicMatrix.
 /// ```
-/// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
-///
+/// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
 /// let mat: DynamicMatrix<isize> = dynamic_matrix!(3);
 ///
 /// assert_eq!(mat.shape(), (0, 3));
@@ -21,8 +20,7 @@ use crate::errors::{indexing_error::IndexingError, shape_error::ShapeError};
 ///
 /// 2. With a list of arguments followed the number of columns in this DynamicMatrix.
 /// ```
-/// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
-///
+/// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
 /// let mat = dynamic_matrix![1, 2, 3, 4, 5, 6, 7, 8, 9; 3];
 ///
 /// assert_eq!(mat.shape(), (3, 3));
@@ -31,8 +29,7 @@ use crate::errors::{indexing_error::IndexingError, shape_error::ShapeError};
 ///
 /// 3. A "nested array". "," seperating elements at the row level and ";" at the column level.
 /// ```
-/// # use simple_matrices::{dynamic_matrix, dynamic::row_major::{DynamicMatrix}};
-///
+/// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
 /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
 ///
 /// assert_eq!(mat.shape(), (3, 3));
@@ -40,17 +37,17 @@ use crate::errors::{indexing_error::IndexingError, shape_error::ShapeError};
 /// ```
 macro_rules! dynamic_matrix {
     ($cols:expr) => {
-        $crate::dynamic::row_major::DynamicMatrix::new_with_cols($cols)
+        $crate::DynamicMatrix::new_with_cols($cols)
     };
     ($($elem:expr),+; $cols:expr) => (
-            $crate::dynamic::row_major::DynamicMatrix::from_boxed_slice(::std::boxed::Box::new([$($elem),+]), $cols)
+            $crate::DynamicMatrix::from_boxed_slice(::std::boxed::Box::new([$($elem),+]), $cols)
     );
     ($($($elem:expr),+);+) => (
-        $crate::dynamic::row_major::DynamicMatrix::new([$([$($elem),+]),+])
+        $crate::DynamicMatrix::new([$([$($elem),+]),+])
     )
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// A dynamic matrix in row-major order
 /// Adding a new row is cheap while adding a new column is expensive.
 pub struct DynamicMatrix<T> {
@@ -62,8 +59,7 @@ impl<T> DynamicMatrix<T> {
     /// Constructs a new DynamicMatrix from a nested array
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mat: DynamicMatrix<isize> = DynamicMatrix::new([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
     ///
     /// assert_eq!(mat.shape(), (3, 3));
@@ -81,8 +77,7 @@ impl<T> DynamicMatrix<T> {
     /// Constructs a new empty DynamicMatrix with a set number of columns
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mat: DynamicMatrix<isize> = DynamicMatrix::new_with_cols(3);
     ///
     /// assert_eq!(mat.rows(), 0);
@@ -99,8 +94,7 @@ impl<T> DynamicMatrix<T> {
     /// reallocation
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((3, 3));
     ///
     /// assert_eq!(mat.rows(), 0);
@@ -117,8 +111,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns the number of rows in the DynamicMatrix
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// assert_eq!(mat.rows(), 3);
@@ -130,8 +123,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns the number of columns in the DynamicMatrix
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// assert_eq!(mat.cols(), 3);
@@ -143,8 +135,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns a tuple containing the number of rows as the first element and number of columns as the second element
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// assert_eq!(mat.shape(), (3, 3));
@@ -156,8 +147,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns the length of the underlying Vec
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// assert_eq!(mat.len(), 9);
@@ -168,8 +158,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns the capacity of the underlying Vec
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mat: DynamicMatrix<isize> = DynamicMatrix::with_capacity((3, 3));
     ///
     /// assert_eq!(mat.capacity(), 9);
@@ -180,8 +169,7 @@ impl<T> DynamicMatrix<T> {
     /// Appends a new row to the DynamicMatrix
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mut mat: DynamicMatrix<isize> = DynamicMatrix::new_with_cols(3);
     ///
     /// mat.push_row(vec![1, 2, 3]).unwrap();
@@ -194,8 +182,7 @@ impl<T> DynamicMatrix<T> {
     ///
     /// Trying to append a new row with unequal number of columns will return a `ShapeError`:
     /// ```should_panic
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mut mat: DynamicMatrix<isize> = DynamicMatrix::new_with_cols(3);
     ///
     /// // Trying to push a vector with length 4 into a matrix with only 3 columns
@@ -213,8 +200,7 @@ impl<T> DynamicMatrix<T> {
     /// Appends a new columns to the DynamicMatrix
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mut mat: DynamicMatrix<isize> = DynamicMatrix::new_with_cols(2);
     ///
     /// mat.push_row(vec![1, 2]).unwrap();
@@ -229,8 +215,7 @@ impl<T> DynamicMatrix<T> {
     ///
     /// Trying to append a new row with unequal number of columns will return a `ShapeError`:
     /// ```should_panic
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let mut mat: DynamicMatrix<isize> = DynamicMatrix::new_with_cols(2);
     ///
     /// mat.push_row(vec![1, 2]).unwrap();
@@ -256,8 +241,7 @@ impl<T> DynamicMatrix<T> {
     /// Gives a raw pointer to the underlying Vec's buffer
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// let mat_ptr = mat.as_ptr();
@@ -272,8 +256,7 @@ impl<T> DynamicMatrix<T> {
     /// Gives a raw mutable pointer to the underlying Vec's buffer
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// let mat_ptr = mat.as_mut_ptr();
@@ -292,8 +275,7 @@ impl<T> DynamicMatrix<T> {
     /// Extracts a slice containing the underlying Vec
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// assert_eq!(mat.as_slice(), &[1, 2, 3, 4, 5, 6, 7, 8, 9]);
@@ -305,8 +287,7 @@ impl<T> DynamicMatrix<T> {
     /// Extracts a mut slice containing the underlying Vec
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     /// let mut mat_slice = mat.as_mut_slice();
     ///
@@ -342,8 +323,7 @@ impl<T> DynamicMatrix<T> {
     /// Decomposes the DynamicMatrix into the boxed slice of it's underlying Vec
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// let (slice, cols) = mat.into_boxed_slice();
@@ -360,8 +340,7 @@ impl<T> DynamicMatrix<T> {
     /// Creates a DynamicMatrix from a Boxed slice
     ///
     /// ```
-    /// # use simple_matrices::dynamic::row_major::DynamicMatrix;
-    ///
+    /// # use dynamic_matrix::DynamicMatrix;
     /// let boxed_slice = Box::new([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     /// let mat = DynamicMatrix::from_boxed_slice(boxed_slice, 3);
     ///
@@ -378,8 +357,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns a `Result` containing a shared reference to the value at the given index
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// for row in 0..mat.rows() {
@@ -391,8 +369,7 @@ impl<T> DynamicMatrix<T> {
     ///
     /// Indexing outside bounds will return an `IndexingError`.
     /// ```should_panic
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// mat.get((3, 3)).unwrap();
@@ -412,8 +389,7 @@ impl<T> DynamicMatrix<T> {
     /// Returns a `Result` containing an exclusive reference to the value at the given index
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// for row in 0..mat.rows() {
@@ -427,8 +403,7 @@ impl<T> DynamicMatrix<T> {
     ///
     /// Indexing outside bounds will return an `IndexingError`.
     /// ```should_panic
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// *mat.get_mut((3, 3)).unwrap() += 1;
@@ -454,8 +429,7 @@ impl<T> Index<(usize, usize)> for DynamicMatrix<T> {
     /// Returns a shared reference to the value at the given index
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// for row in 0..mat.rows() {
@@ -473,8 +447,7 @@ impl<T> IndexMut<(usize, usize)> for DynamicMatrix<T> {
     /// Returns an exclusive reference to the value at the given index
     ///
     /// ```
-    /// # use simple_matrices::{dynamic_matrix, dynamic::row_major::DynamicMatrix};
-    ///
+    /// # use dynamic_matrix::{dynamic_matrix, DynamicMatrix};
     /// let mut mat = dynamic_matrix![1, 2, 3; 4, 5, 6; 7, 8, 9];
     ///
     /// for row in 0..mat.rows() {

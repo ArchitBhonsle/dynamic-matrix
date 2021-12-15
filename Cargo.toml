@@ -5,6 +5,6 @@ description = "A simple crate to work with matrices"
 edition = "2021"
 keywords = ["matrices"]
 license = "Apache-2.0"
-name = "simple-matrices"
+name = "dynamic-matrix"
 repository = "https://github.com/ArchitBhonsle/simple-matrices"
 version = "0.1.0"

@@ -1,7 +1,9 @@
+//! Error encountered due to incompatible shapes
+
 use std::fmt;
 
-// The error type for any shape errors
 #[derive(Clone, Debug)]
+/// The error type for any shape errors
 pub struct ShapeError {
     rows: usize,
     cols: usize,
@@ -28,6 +30,7 @@ impl fmt::Display for ShapeError {
 }
 
 impl ShapeError {
+    /// Create a new `ShapeError` given the shape of the matrix and the expected shape
     pub fn new(shape: (usize, usize), expected_shape: (usize, usize)) -> ShapeError {
         ShapeError {
             rows: shape.0,
@@ -37,6 +40,7 @@ impl ShapeError {
         }
     }
 
+    /// Create a new `ShapeError` given the rows of the matrix and the expected rows
     pub fn new_rows_error(rows: usize, expected_rows: usize) -> ShapeError {
         ShapeError {
             rows,
@@ -46,6 +50,7 @@ impl ShapeError {
         }
     }
 
+    /// Create a new `ShapeError` given the columns of the matrix and the expected columns
     pub fn new_cols_error(cols: usize, expected_cols: usize) -> ShapeError {
         ShapeError {
             rows: 0,
