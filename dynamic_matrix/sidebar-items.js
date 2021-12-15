@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["dynamic_matrix","A macro to construct a DynamicMatrix"]],"mod":[["errors","Contains the errors associated with this crate"]],"struct":[["DynamicMatrix","A dynamic matrix in stored in row-major order."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ShapeError","The error type for any shape errors"]]});
