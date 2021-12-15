@@ -49,6 +49,7 @@ macro_rules! dynamic_matrix {
 
 #[derive(Debug, Clone)]
 /// A dynamic matrix in stored in row-major order.
+///
 /// Adding a new row is cheap while adding a new column is expensive.
 pub struct DynamicMatrix<T> {
     data: Vec<T>,
